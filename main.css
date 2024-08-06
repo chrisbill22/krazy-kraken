@@ -1,0 +1,365 @@
+body{
+    background-color: #030A1E;
+    overflow: hidden;
+    background: linear-gradient(to top, #000327aa, #030a1e48), url(images/bg.jpeg) no-repeat bottom center;
+    background-size: cover;
+}
+#page-startup{
+    position: relative;
+    z-index: 999;
+}
+.wave{
+    position: fixed;
+    left:-100px;
+    width: 150%;
+    background-position: bottom;
+    background-size: contain;
+    height:200px;
+    /* animation */
+    animation-iteration-count: infinite;
+    animation-name: arc-move-anim-1;
+    background-size: 160px;
+    background-repeat:no-repeat;
+    background-repeat:repeat-x;
+}
+.paused {
+    animation-play-state: paused;
+}
+#wave_0{
+    background-image: url('images/wave_0.png');
+    animation-duration: 4s;
+    bottom:-100px;
+}
+#wave_1{
+    background-image: url('images/wave_1.png');
+    animation-duration: 8s;
+    bottom: -138px;
+    height: 320px;
+    left: -180px;
+    
+}
+#wave_2{
+    background-image: url('images/wave_2.png');
+    animation-duration: 4s;
+    animation-delay: 1s;
+    bottom: -50px;
+    height: 350px;
+    left: -95px;
+    /*set so that it doesn't jump after the dealy */
+    transform: rotate(0deg) translateX(-50px) rotate(0deg) translateX(0px);
+}
+#wave_3{
+    background-image: url('images/wave_3.png');
+    animation-duration: 10s;
+    bottom:50px;
+    left: -150px;
+}
+
+.tentical{
+    background-size: contain;
+    animation-iteration-count: infinite;
+    animation-name: tenticalMove;
+}
+.tentical.debug{
+    border: solid 5px #ddfb00;
+}
+.tentical_intro{
+    animation-name: tenticalIntro;
+    animation-duration: 2s;
+    position:fixed;
+    bottom:0px;
+}
+.death{
+    animation-name: tenticalDie;
+    animation-duration: 2s;
+    bottom:-800px;
+}
+.t_0{
+    width: 389px;
+    height: 506px;
+    background-image: url('images/tentical_0.png');
+    animation-duration: 3s;
+}
+.t_1{
+    width: 327px;
+    height:656px;
+    background-image: url('images/tentical_1.png');
+    animation-duration: 3s;
+}
+.t_2{
+    width: 309px;
+    height: 666px;
+    background-image: url('images/tentical_2.png');   
+    animation-duration: 3s;
+}
+.t_3{
+    width: 464px;
+    height: 598px;
+    background-image: url('images/tentical_3.png');
+    animation-duration: 3s;
+}
+.t_4{
+    width: 341px;
+    height: 656px;
+    background-image: url('images/tentical_4.png');
+    animation-duration: 3s;
+}
+.t_5{
+    width: 293px;
+    height:656px;
+    background-image: url('images/tentical_5.png');
+    animation-duration: 3s;
+}
+#boss_intro{
+    animation-name: bossIntro;
+    animation-duration: 2s;
+    bottom: -30%;
+    position: fixed;
+    width: 400px;
+    height: 70%;
+    margin: auto;
+    left: 0;
+    right: 0;
+}
+#boss_intro.boss_hit{
+    animation-name: bossHit;
+    animation-duration: 2s;
+    bottom: -100%;
+}
+#boss_intro.boss_end{
+    animation-name: bossEnd;
+    animation-duration: 4s;
+    bottom: -30%;
+}
+#boss{
+    background-image: url('images/boss.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation-name: bossMove;
+    animation-iteration-count: infinite;
+    animation-duration: 4s;
+    height: 100%;
+    width: 400px;
+    /* height: 100%; */
+    height: inherit;
+    margin: auto;
+}
+#boss.debug{
+    border: solid 5px #7dfb00;
+}
+#crosshairs{
+    width:150px;
+    height:150px;
+    position:fixed;
+    left:0%;
+    top:0%;
+    background-image:url('images/crosshairs.png');
+    background-size: contain;
+    /* transition: left 0.3s, top 0.3s; */
+}
+#crosshairs.auto{
+    animation-name: crosshairsAnim;
+    animation-duration: 30s;
+    animation-iteration-count: infinite;
+}
+.cannonball{
+    width:400px;
+    height:400px;
+    background-image: url('images/cannonball.webp');
+    background-size: contain;
+    position: absolute;
+    animation-name: cannonballAnim;
+    animation-duration: 1s;
+    animation-timing-function:ease-out;
+}
+.cannonball.debug{
+    border: solid 5px #ddfb00;
+}
+#debug_red{
+    top:0px;
+    left:0px;
+    position:fixed;
+    background-color: #ff00002b;
+    border:solid 1px #FF0000;
+}
+#debug_green{
+    top:0px;
+    left:0px;
+    position:fixed;
+    background-color: #00ff00bd;
+    border:solid 1px #00ff00;
+}
+#debug_blue{
+    top:0px;
+    left:0px;
+    position:fixed;
+    background-color: #fb00ff3e;
+    border:solid 1px #0000ff;
+}
+
+@keyframes cannonballAnim {
+    0%{
+        transform: scale(1) translateY(0px);
+    }
+    100%{
+        transform: scale(0.15) translateY(-400px);
+    }
+}
+
+@keyframes crosshairsAnim {
+    /* top, left */
+    0%{
+        top:18%;
+        left:2%;
+    }
+    /* bottom, middle */
+    10%{
+        top:80%;
+        left:48%;
+    }
+    /* middle, right */
+    20%{
+        top:50%;
+        left:80%;
+    }
+    /* middle, left */
+    30%{
+        top:60%;
+        left:12%;
+    }
+    /* top, right */
+    40%{
+        top:20%;
+        left:90%;
+    }
+    /* middle, middle */
+    50%{
+        top:52%;
+        left:46%;
+    }
+    /* bottom, right */
+    60%{
+        top:78%;
+        left:89%;
+    }
+    /* top, middle */
+    70%{
+        top:27%;
+        left:53%;
+    }
+    /* bottom, left */
+    80%{
+        top:82%;
+        left:6%;
+    }
+    /* middle, middle */
+    90%{
+        top:45%;
+        left:45%;
+    }
+    /* top, left */
+    100%{
+        top:20%;
+        left:2%;
+    }
+}
+@keyframes bossIntro {
+    0% {
+		bottom: -100%;
+	}
+	100% {
+		bottom: -30%;
+	}
+}
+@keyframes bossEnd {
+    0% {
+		transform: scale(1) rotate(0);
+        bottom:-30%;
+	}
+	100% {
+		transform: scale(0) rotate(720deg);
+        bottom:60%;
+	}
+}
+@keyframes bossHit {
+    0%{
+        filter: none;
+        bottom: -30%;
+    }
+    10%{
+        filter: invert(14%) sepia(45%) saturate(7441%) hue-rotate(0deg) brightness(77%) contrast(119%);
+        bottom: 10%;
+    }
+    20%{
+        filter: none;
+        bottom: 0%;
+    }
+    30%{
+        filter: invert(14%) sepia(45%) saturate(7441%) hue-rotate(0deg) brightness(77%) contrast(119%);
+        bottom: 0%;
+    }
+    40% {
+        filter: none;
+	}
+	100% {
+		bottom: -100%;
+	}
+}
+@keyframes bossMove {
+    0%{
+        transform: scaleY(1) translateY(0px);
+    }
+    50%{
+        transform: scaleY(0.95) translateY(-50px);
+    }
+    100%{
+        transform: scale(1) translateY(0px);
+    }
+}
+@keyframes tenticalMove {
+    0%{
+        transform: scaleX(1);
+    }
+    50%{
+        transform: scaleX(0.9);
+    }
+    100%{
+        transform: scale(1);
+    }
+}
+@keyframes tenticalDie {
+    0% {
+		bottom: 0px;
+	}
+	100% {
+		bottom: -800px;
+	}
+}
+@keyframes tenticalIntro {
+    0% {
+		bottom: -500px;
+	}
+	100% {
+		bottom: 0px;
+	}
+}
+@keyframes arc-move-anim-1 {
+	0% {
+		transform: rotate(0deg) translateX(-50px) rotate(0deg) translateX(0px);
+	}
+	100% {
+		transform: rotate(180deg) translateX(-50px) rotate(-180deg) translateX(-100px);
+	}
+}
+@keyframes example {
+    0%   {left:0px; bottom:-50px;}
+    25%  {left:-200px; bottom:0px;}
+    50%  {left:-200px; bottom:0px;}
+    75%  {left:0px; bottom:0px;}
+    100% {left:0px; bottom:-50px;}
+  }
+
+.hidden{
+    display: none;
+}

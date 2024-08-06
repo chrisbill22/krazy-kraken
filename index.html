@@ -1,0 +1,115 @@
+<html>
+    <head>
+        <title>Yarr</title>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor">
+        <script type="text/javascript" src="jquery.js"></script>
+        <script type="text/javascript" src="main.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="main.css" rel="stylesheet">
+        <!--<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>--> <!-- todo switch to local -->
+        <script src="iro@5.js"></script>
+    </head>
+    <body class="p-4">
+        <!-- SHOW PAGE -->
+        <div id="page-show" class="">
+            <!-- TODO: add pause class back in-->
+            <div class="tenticalContainer" id="tc_4"></div>
+            <div class="wave" id="wave_3"></div>
+            <div class="tenticalContainer" id="tc_3"></div>
+            <div class="wave" id="wave_2"></div>
+            <div class="tenticalContainer" id="tc_2"></div>
+            <div class="wave" id="wave_1"></div>
+            <div class="tenticalContainer" id="tc_1"></div>
+            <div class="wave" id="wave_0"></div>
+            <div class="tenticalContainer" id="tc_0"></div>
+            <!-- Crosshairs -->
+            <div id="crosshairs"></div>
+            <!-- Cannonball -->
+            <div id="cannonballs"></div>
+
+            <!-- Debug -->
+            <div id="debug_red"></div>
+            <div id="debug_green"></div>
+            <div id="debug_blue"></div>
+        </div>
+        
+        
+        
+        <!-- STARTUP PAGE -->
+        <div id="page-startup" class="container overflow-hidden hidden">
+            <!-- Starting Page -->
+            <div class="row" id="scan">
+                <div class="col">
+                    <div class="p-3 border bg-light">
+                        <h2>Audio Options</h2>
+                        <div class="input-group mt-2 mb-2">
+                            <input type="text" class="form-control" style="max-width:300px;" id="audio-show-delay" placeholder="ms start delay">
+                            <input type="button" id="audio-show-delay-save" value="Save" class="btn btn-primary"/>
+                        </div>
+                        <br />
+                         <!--Cannon sound-->
+                        <audio
+                        id="cannon-audio"
+                        controls
+                        src="audio/placehodler.mp3">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    <!--hit or miss sound-->
+                    <audio
+                        id="hit-audio"
+                        controls
+                        src="audio/placehodler.mp3">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    <!--bg waves loop-->
+                    <audio
+                        id="bg-audio"
+                        controls
+                        loop
+                        src="audio/bg1.m4a">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    <!--bg creaking loop-->
+                    <audio
+                        id="bg-creaking-audio"
+                        controls
+                        loop
+                        src="audio/creaking1.mp3">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    <!--random pirate talking-->
+                    <audio
+                        id="talk-audio"
+                        controls
+                        loop
+                        src="audio/placehodler.mp3">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    <!--background music-->
+                    <audio
+                        id="bg-music"
+                        controls
+                        loop
+                        src="audio/music1.mp3">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    </div>
+                </div>
+            </div>
+            <div class="row pt-3" id="scan">
+                <div class="col">
+                    <div class="p-3 border bg-light">
+                        <input type="button" id="start-show" value="Close Helper" class="btn btn-primary"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
