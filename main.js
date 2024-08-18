@@ -1,5 +1,5 @@
 let audio;
-let debug = true;
+let debug = false;
 
 let playerControlAim = true;
 let crosshairLeft = 0;
