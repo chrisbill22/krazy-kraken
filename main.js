@@ -13,8 +13,8 @@ const CannonballHeight = 400;
 const CrosshairsHeight = 150;
 const CrosshairsWidth = 150;
 
-const CrosshairHorizIncreaseAmount = 1.4;
-const CrosshairVerticalIncreaseAmount = 0.8;
+const CrosshairHorizIncreaseAmount = 1.6;
+const CrosshairVerticalIncreaseAmount = 1;
 
 //timing for the next tentical to show up
 const MinProcessTime = 3000
@@ -23,6 +23,19 @@ const RandomProcessTime = 3000 //added to min
 function getRandomInt(max) {
     max += 1; //so that max can equal what is passed in
     return Math.floor(Math.random() * max);
+}
+
+function togglePlayerAimControl(){
+    if(playerControlAim){
+        //turn off
+        document.getElementById('crosshairs').classList.add('auto')
+        playerControlAim = false;
+    }else{
+        //turn on
+        document.getElementById('crosshairs').classList.remove('auto')
+        window.requestAnimationFrame(animate);
+        playerControlAim = true;
+    }
 }
 
 $(document).ready(function(){
@@ -35,11 +48,14 @@ $(document).ready(function(){
         $("#page-show").show();
     });
 
+    setupAnimation();
+
     if(!playerControlAim){
         document.getElementById('crosshairs').classList.add('auto')
     }else{
-        crosshairLeft = ((document.body.clientWidth / 2) - (CrosshairsWidth / 2)) - 300
-        crosshairTop = ((document.body.clientHeight / 2) - (CrosshairsHeight)) - 100
+        crosshairLeft = ((document.body.clientWidth / 2) - (CrosshairsWidth / 2)) - 300;
+        crosshairTop = ((document.body.clientHeight / 2) - (CrosshairsHeight)) - 100;
+        window.requestAnimationFrame(animate);
     }
 
     let cannonballID = 0;
@@ -78,137 +94,9 @@ $(document).ready(function(){
         if(e.key == "p" || e.code =="p"){
             $("#page-startup").show();
         }
-    }
-
-    if(playerControlAim){
-        let wDown = false;
-        let aDown = false;
-        let sDown = false;
-        let dDown = false;
-
-        let swayHorizAmounts = [];
-        let swayVerticalAmounts = [];
-
-        let amount1 = 0.01
-        let maxHorizAmount = 2.5;
-        //far right
-        for(let i = 0; i <= maxHorizAmount; i+=amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayHorizAmounts.push(i)
+        if(e.key == "o" || e.code == "o"){
+            togglePlayerAimControl();
         }
-        for(let i = maxHorizAmount; i >= 0; i -= amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayHorizAmounts.push(i)
-        }
-        //move back to left
-        for(let i = 0; i >= maxHorizAmount*-1; i -= amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayHorizAmounts.push(i)
-        }
-        for(let i = maxHorizAmount*-1; i <= 0; i += amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayHorizAmounts.push(i)
-        }
-
-        //VERTICAL
-
-        let maxVerticalAmount = 1;
-        for(let i = 0; i <= (maxVerticalAmount-0.2); i+=amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayVerticalAmounts.push(i)
-        }
-        for(let i = (maxVerticalAmount-0.2); i >= 0; i -= amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayVerticalAmounts.push(i)
-        }
-        //move back top
-        for(let i = 0; i >= maxVerticalAmount*-1; i -= amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayVerticalAmounts.push(i)
-        }
-        for(let i = maxVerticalAmount*-1; i <= 0; i += amount1){
-            i = parseFloat(parseFloat(i).toFixed(2))
-            swayVerticalAmounts.push(i)
-        }
-
-        let swayIndexHorizTracker = 0;
-        let swayIndexVerticalTracker = 0;
-
-        document.addEventListener("keydown", (e) => {
-            if(e.key == 'w' || e.code == 'w'){
-                wDown = true;
-            }
-            if(e.key == 'a' || e.code == 'a'){
-                aDown = true;
-            }
-            if(e.key == 's' || e.code == 's'){
-                sDown = true;
-            }
-            if(e.key == 'd' || e.code == 'd'){
-                dDown = true;
-            }
-        })
-        document.addEventListener("keyup", (e) => {
-            if(e.key == 'w' || e.code == 'w'){
-                wDown = false;
-            }
-            if(e.key == 'a' || e.code == 'a'){
-                aDown = false;
-            }
-            if(e.key == 's' || e.code == 's'){
-                sDown = false;
-            }
-            if(e.key == 'd' || e.code == 'd'){
-                dDown = false;
-            }
-        })
-
-        const animate = () => {
-            if(wDown){
-                crosshairTop -= CrosshairVerticalIncreaseAmount;
-            }
-            if(aDown){
-                crosshairLeft -= CrosshairHorizIncreaseAmount;
-            }
-            if(sDown){
-                crosshairTop += CrosshairVerticalIncreaseAmount;
-            }
-            if(dDown){
-                crosshairLeft += CrosshairHorizIncreaseAmount;
-            }
-
-            
-
-            crosshairLeft += swayHorizAmounts[swayIndexHorizTracker];
-            swayIndexHorizTracker++;
-            if(swayIndexHorizTracker > swayHorizAmounts.length-1){
-                swayIndexHorizTracker=0;
-            }
-
-            crosshairTop += swayVerticalAmounts[swayIndexVerticalTracker];
-            swayIndexVerticalTracker++;
-            if(swayIndexVerticalTracker > swayVerticalAmounts.length-1){
-                swayIndexVerticalTracker=0;
-            }
-
-            if(crosshairTop < 0){
-                crosshairTop = 0;
-            }
-            if(crosshairLeft < 0){
-                crosshairLeft = 0;
-            }
-            if(crosshairTop > document.body.clientHeight - CrosshairsHeight){
-                crosshairTop = document.body.clientHeight - CrosshairsHeight;
-            }
-            if(crosshairLeft > document.body.clientWidth - CrosshairsWidth){
-                crosshairLeft = document.body.clientWidth - CrosshairsWidth;
-            }
-
-            document.getElementById('crosshairs').style.left = crosshairLeft+'px'
-            document.getElementById('crosshairs').style.top = crosshairTop+'px'
-            window.requestAnimationFrame(animate)
-        }
-        window.requestAnimationFrame(animate)
     }
 
     function processCannonball(cannonballID){
@@ -352,6 +240,142 @@ $(document).ready(function(){
     */
 });
 
+let animate;
+
+function setupAnimation(){
+    /* SETUP ANIMATION */
+    let wDown = false;
+    let aDown = false;
+    let sDown = false;
+    let dDown = false;
+    let swayHorizAmounts = [];
+    let swayVerticalAmounts = [];
+
+    let amount1 = 0.01
+    let maxHorizAmount = 2.5;
+    //far right
+    for(let i = 0; i <= maxHorizAmount; i+=amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayHorizAmounts.push(i)
+    }
+    for(let i = maxHorizAmount; i >= 0; i -= amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayHorizAmounts.push(i)
+    }
+    //move back to left
+    for(let i = 0; i >= maxHorizAmount*-1; i -= amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayHorizAmounts.push(i)
+    }
+    for(let i = maxHorizAmount*-1; i <= 0; i += amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayHorizAmounts.push(i)
+    }
+
+    //VERTICAL
+
+    let maxVerticalAmount = 1;
+    for(let i = 0; i <= (maxVerticalAmount-0.2); i+=amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayVerticalAmounts.push(i)
+    }
+    for(let i = (maxVerticalAmount-0.2); i >= 0; i -= amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayVerticalAmounts.push(i)
+    }
+    //move back top
+    for(let i = 0; i >= maxVerticalAmount*-1; i -= amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayVerticalAmounts.push(i)
+    }
+    for(let i = maxVerticalAmount*-1; i <= 0; i += amount1){
+        i = parseFloat(parseFloat(i).toFixed(2))
+        swayVerticalAmounts.push(i)
+    }
+
+    let swayIndexHorizTracker = 0;
+    let swayIndexVerticalTracker = 0;
+
+    document.addEventListener("keydown", (e) => {
+        if(playerControlAim){
+            if(e.key == 'w' || e.code == 'w'){
+                wDown = true;
+            }
+            if(e.key == 'a' || e.code == 'a'){
+                aDown = true;
+            }
+            if(e.key == 's' || e.code == 's'){
+                sDown = true;
+            }
+            if(e.key == 'd' || e.code == 'd'){
+                dDown = true;
+            }
+        }
+    })
+    document.addEventListener("keyup", (e) => {
+        if(playerControlAim){
+            if(e.key == 'w' || e.code == 'w'){
+                wDown = false;
+            }
+            if(e.key == 'a' || e.code == 'a'){
+                aDown = false;
+            }
+            if(e.key == 's' || e.code == 's'){
+                sDown = false;
+            }
+            if(e.key == 'd' || e.code == 'd'){
+                dDown = false;
+            }
+        }
+    })
+    animate = () => {
+        if(wDown){
+            crosshairTop -= CrosshairVerticalIncreaseAmount;
+        }
+        if(aDown){
+            crosshairLeft -= CrosshairHorizIncreaseAmount;
+        }
+        if(sDown){
+            crosshairTop += CrosshairVerticalIncreaseAmount;
+        }
+        if(dDown){
+            crosshairLeft += CrosshairHorizIncreaseAmount;
+        }
+
+        
+
+        crosshairLeft += swayHorizAmounts[swayIndexHorizTracker];
+        swayIndexHorizTracker++;
+        if(swayIndexHorizTracker > swayHorizAmounts.length-1){
+            swayIndexHorizTracker=0;
+        }
+
+        crosshairTop += swayVerticalAmounts[swayIndexVerticalTracker];
+        swayIndexVerticalTracker++;
+        if(swayIndexVerticalTracker > swayVerticalAmounts.length-1){
+            swayIndexVerticalTracker=0;
+        }
+
+        if(crosshairTop < 0){
+            crosshairTop = 0;
+        }
+        if(crosshairLeft < 0){
+            crosshairLeft = 0;
+        }
+        if(crosshairTop > document.body.clientHeight - CrosshairsHeight){
+            crosshairTop = document.body.clientHeight - CrosshairsHeight;
+        }
+        if(crosshairLeft > document.body.clientWidth - CrosshairsWidth){
+            crosshairLeft = document.body.clientWidth - CrosshairsWidth;
+        }
+
+        document.getElementById('crosshairs').style.left = crosshairLeft+'px';
+        document.getElementById('crosshairs').style.top = crosshairTop+'px';
+        if(playerControlAim){
+            window.requestAnimationFrame(animate);
+        }
+    }
+}
 
 
 let cooldownTime = 2000;
