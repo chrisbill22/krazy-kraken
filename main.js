@@ -5,16 +5,19 @@ let playerControlAim = true;
 let crosshairLeft = 0;
 let crosshairTop = 0;
 
+/* GAMEPLAY VARIABLES */
+/* Change these to adjust how the game is actually played*/
 let bossStartScore = 2;
 let musicIncrease = 0.25; //was 0.1
+let cooldownTime = 1200;
+const CrosshairHorizIncreaseAmount = 1.6;
+const CrosshairVerticalIncreaseAmount = 1;
+/*END GAMEPLAY VARIABLES */
 
 const CannonballWidth = 400;
 const CannonballHeight = 400;
 const CrosshairsHeight = 150;
 const CrosshairsWidth = 150;
-
-const CrosshairHorizIncreaseAmount = 1.6;
-const CrosshairVerticalIncreaseAmount = 1;
 
 //timing for the next tentical to show up
 const MinProcessTime = 3000
@@ -378,7 +381,6 @@ function setupAnimation(){
 }
 
 
-let cooldownTime = 2000;
 let isCooledDown = true;
 
 let tID = 0; //so we can identify each tentical to shoot down
