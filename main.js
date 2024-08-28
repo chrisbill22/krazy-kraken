@@ -10,8 +10,8 @@ let crosshairTop = 0;
 let bossStartScore = 2;
 let musicIncrease = 0.25; //was 0.1
 let cooldownTime = 1200;
-const CrosshairHorizIncreaseAmount = 1.6;
-const CrosshairVerticalIncreaseAmount = 1;
+const CrosshairHorizIncreaseAmount = 3.5; //1.6 2.8
+const CrosshairVerticalIncreaseAmount = 2; //1
 /*END GAMEPLAY VARIABLES */
 
 const CannonballWidth = 400;
@@ -90,12 +90,13 @@ $(document).ready(function(){
             }
             let cannonballHTML = `<div style="left:${cannonBallX}px; top:${cannonBallY}px" class="cannonball ${debugClass}" id="cannonball${cannonballID}"></div>`;
             $("#cannonballs").append(cannonballHTML);
-            setTimeout(processCannonball.bind(null, cannonballID), 1000);
+            setTimeout(processCannonball.bind(null, cannonballID), 900);
             cannonSound();
             cannonballID++;
         }
         if(e.key == "p" || e.code =="p"){
             $("#page-startup").show();
+            $("#bgAudioLevel").html(bgMusic.volume);
         }
         if(e.key == "o" || e.code == "o"){
             togglePlayerAimControl();
@@ -156,7 +157,12 @@ $(document).ready(function(){
             if(hits.length > 0){
                 hitSound(true);
                 if(bgMusic.volume <= 1){
-                    bgMusic.volume += musicIncrease;
+                    let newVolumne = bgMusic.volume + musicIncrease;
+                    if(newVolumne > 1){
+                        bgMusic.volume = 1;
+                    }else{
+                        bgMusic.volume += musicIncrease;
+                    }
                 }
                 hits.sort(function(a,b){
                     if(a.c < b.c){
@@ -489,7 +495,12 @@ function startBoss(){
 function hitBoss(){
     bossStep++;
     if(bgMusic.volume <= 1){
-        bgMusic.volume += musicIncrease;
+        let newVolumne = bgMusic.volume + musicIncrease;
+        if(newVolumne > 1){
+            bgMusic.volume = 1;
+        }else{
+            bgMusic.volume += musicIncrease;
+        }
     }
     if(bossStep == 2){
         $("#boss_intro").addClass("boss_end");

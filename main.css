@@ -7,6 +7,7 @@ body{
 #page-startup{
     position: relative;
     z-index: 999;
+    background-color: white;
 }
 .wave{
     position: fixed;
