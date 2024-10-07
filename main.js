@@ -1,3 +1,22 @@
+/* -- ARDUINO REFERENCE
+s
+UNO (JOYSTICK)
+1 - power   BLACK
+2 - up      YELLOW
+3 - down    PURPLE
+4 - left    BLUE
+5 - right   BROWN
+
+LEO (CANNON)
+13  - switch in   GREEN
+GR - switch out  BLUE
+12 - LED IN      RED
+GR - LED OUT     YELLOW
+8  - RX SERIAL   BLACK
+9  - TX SERIAL   WHITE
+
+-- */
+
 let audio;
 let debug = false;
 //test
@@ -10,7 +29,7 @@ let crosshairTop = 0;
 let bossStartScore = 2;
 let musicIncrease = 0.25; //was 0.1
 let cooldownTime = 1200;
-const CrosshairHorizIncreaseAmount = 3.5; //1.6 2.8
+const CrosshairHorizIncreaseAmount = 4.5; //1.6 2.8 3.5
 const CrosshairVerticalIncreaseAmount = 2; //1
 /*END GAMEPLAY VARIABLES */
 
