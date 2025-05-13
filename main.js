@@ -20,7 +20,7 @@ GR - LED OUT     YELLOW
 let audio;
 let debug = false;
 //test
-let playerControlAim = true;
+let playerControlAim = false;
 let crosshairLeft = 0;
 let crosshairTop = 0;
 
@@ -40,7 +40,7 @@ const CrosshairsWidth = 150;
 
 //timing for the next tentical to show up
 const MinProcessTime = 3000
-const RandomProcessTime = 3000 //added to min
+const RandomProcessTime = 5000 //added to min
 
 function getRandomInt(max) {
     max += 1; //so that max can equal what is passed in
@@ -118,7 +118,7 @@ $(document).ready(function(){
             $("#bgAudioLevel").html(bgMusic.volume);
         }
         if(e.key == "o" || e.code == "o"){
-            togglePlayerAimControl();
+            //togglePlayerAimControl();
         }
     }
 
