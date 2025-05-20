@@ -268,6 +268,40 @@ $(document).ready(function(){
     */
 });
 
+//DAMAGE
+let damage = [false, false, false];
+function takeDamage(){
+    if(damage[0] === true && damage[1] === true && damage[2] === true){
+        return;
+    }
+    console.log("damage");
+
+    let tookDamange = false;
+    while(tookDamange == false){
+        let d = getRandomInt(2);
+        if(damage[d] === false){
+            damage[d] = true;
+            let damagePart = d;
+            console.log(damagePart);
+            switch(damagePart){
+                case 0:
+                    $("#ship_left").attr('src', "images/ship_left_broken.png");
+                break;
+                case 1:
+                    $("#ship_center").attr('src', "images/ship_center_broken.png");
+                break;
+                case 2:
+                    $("#ship_right").attr('src', "images/ship_right_broken.png");
+                break;
+            }
+            tookDamange = true;
+        }
+    }
+
+}
+
+//
+
 let animate;
 
 function setupAnimation(){
@@ -439,9 +473,6 @@ function deactivateOldTentical(oldTID){
 }
 
 function generateTenticalHTML(){
-
-    
-
     if(tenticals.length < maxT && !bossStarted){
         let t_num = getRandomInt(5); //tentical number
         let c_num = getRandomInt(3) + 1; //container number
