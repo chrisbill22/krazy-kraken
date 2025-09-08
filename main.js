@@ -15,22 +15,23 @@ GR - LED OUT     YELLOW
 8  - RX SERIAL   BLACK
 9  - TX SERIAL   WHITE
 
+ARDUINO RESPONSABILITY
+- Determine which direction to fire the UFO & damage the ship
+  - Loop process picks a random direction at an interval and sends keyboard command to computer
+  - Computer renders the result
+  - If computer gets a command and the ufo is busy or destoryed, it's ignored
+
 -- */
 
 let audio;
 let debug = false;
-//test
-let playerControlAim = false;
-let crosshairLeft = 0;
-let crosshairTop = 0;
 
 /* GAMEPLAY VARIABLES */
 /* Change these to adjust how the game is actually played*/
 let bossStartScore = 2;
 let musicIncrease = 0.25; //was 0.1
 let cooldownTime = 1200;
-const CrosshairHorizIncreaseAmount = 4.5; //1.6 2.8 3.5
-const CrosshairVerticalIncreaseAmount = 2; //1
+
 /*END GAMEPLAY VARIABLES */
 
 const CannonballWidth = 400;
@@ -42,26 +43,117 @@ const CrosshairsWidth = 150;
 const MinProcessTime = 3000
 const RandomProcessTime = 5000 //added to min
 
+const KEY_CODES = {
+    DAMAGE_LEFT: 'z',
+    DAMAGE_CENTER: 'x',
+    DAMAGE_RIGHT: 'c',
+    REPAIR_LEFT: 'v',
+    REPAIR_CENTER: 'b',
+    REPAIR_RIGHT: 'n'
+}
+
 function getRandomInt(max) {
     max += 1; //so that max can equal what is passed in
     return Math.floor(Math.random() * max);
 }
 
-function togglePlayerAimControl(){
-    if(playerControlAim){
-        //turn off
-        document.getElementById('crosshairs').classList.add('auto')
-        playerControlAim = false;
+let gameHasStarted = false;
+let gameHasEnded = false;
+function startGame(){
+    console.log("start game");
+    score = 0;
+    fireworks.stop();
+    gameHasEnded = false;
+    ufoWasHit = false;
+
+    //$("#start-ship").addClass('ship-start-animation');
+    $("#start-ship").fadeOut(2000);
+    $("#title-text").fadeOut(2000);
+    $("#game-over-ship").hide();
+    $("#game-over-ship").removeClass('sink-ship');
+    $('#ship').fadeIn(2000, () => {
+        $("#start-ship").removeClass('ship-start-animation');
+        $('#crosshairs').fadeIn();
+        $('#ufo').fadeIn();
+        $("#game-over-ship").hide();
+        $("#start-ship").hide();
+        gameHasStarted = true;
+        startUFO();
+        $('#start-ship').attr('style', 'display:none;');
+    });
+}
+function endGame(won){
+    if(gameHasEnded){
+        return;
+    }
+    gameHasEnded = true;
+    if(won){
+        console.log("win");
+        let p = $('#ufo').position();
+        $('#ufo').offset({ top: p.top, left: p.left });
+        $('#ufo').removeClass("idle_1");
+        $('#ufo').addClass("ufo_destroyed");
+        $("#title-text").html("Victory!");
+        setTimeout(() => {
+            fireworks.start();
+        }, 1000)
+        $("#start-ship").fadeIn(2000);
+        $('#ship').fadeOut(2000);
+        $('#crosshairs').fadeOut(2000);
+        $("#title-text").fadeIn(2000);
+        setTimeout(function(){
+            $("#title-text").fadeOut(1000, () => {
+                $("#title-text").html("Press Any Button to Start");
+                $("#title-text").fadeIn(1000, () => {
+                    //fireworks.stop();
+                    gameHasStarted = false;
+                });
+            });
+            $('#ufo').removeClass("ufo_destroyed");
+            $('#ufo').attr('style', '');
+            $('#ufo').hide();
+        }, 5000);
     }else{
-        //turn on
-        document.getElementById('crosshairs').classList.remove('auto')
-        window.requestAnimationFrame(animate);
-        playerControlAim = true;
+        console.log("lose");
+        $("#title-text").html("Game Over");
+        $("#game-over-ship").fadeIn(2000);
+        $("#page-splash-screen").fadeIn(2000);
+        $('#ship').fadeOut(2000);
+        $('#crosshairs').fadeOut(2000);
+        $("#title-text").fadeIn(2000)
+        setTimeout(function(){
+            damage = [false, false, false];
+            repairDamage(0);
+            repairDamage(1);
+            repairDamage(2);
+            $("#game-over-ship").addClass('sink-ship');
+            setTimeout(() => {
+                gameHasStarted = false;
+                $("#game-over-ship").fadeOut(2000);
+            }, 5000);
+            setTimeout(() => {
+                $("#title-text").fadeOut(1000, () => {
+                    $("#title-text").html("Press Any Button to Start");
+                    $("#title-text").fadeIn(1000);
+                });
+            }, 4000);
+        }, 4000);
     }
 }
 
+let fireworks;
+
 $(document).ready(function(){
     
+    const container = document.querySelector('.fireworks')
+    fireworks = new Fireworks.default(container)
+
+    $('#ship').hide();
+    $('#crosshairs').hide();
+    $('#ufo').hide();
+
+    $("#game-over-ship").hide();
+
     /* ----------------- */
     /* HTML INTERACTIONS */
     /* ----------------- */
@@ -70,19 +162,16 @@ $(document).ready(function(){
         $("#page-show").show();
     });
 
-    setupAnimation();
-
-    if(!playerControlAim){
-        document.getElementById('crosshairs').classList.add('auto')
-    }else{
-        crosshairLeft = ((document.body.clientWidth / 2) - (CrosshairsWidth / 2)) - 300;
-        crosshairTop = ((document.body.clientHeight / 2) - (CrosshairsHeight)) - 100;
-        window.requestAnimationFrame(animate);
-    }
+    document.getElementById('crosshairs').classList.add('auto')
 
     let cannonballID = 0;
     document.body.onkeyup = function(e) {
         if (isCooledDown && (e.key == " " || e.code == "Space" || e.keyCode == 32)) {
+            if(!gameHasStarted){
+                startGame();
+                return;
+            }
+            
             isCooledDown = false;
             setTimeout(function(){
                 isCooledDown = true;
@@ -117,8 +206,37 @@ $(document).ready(function(){
             $("#page-startup").show();
             $("#bgAudioLevel").html(bgMusic.volume);
         }
-        if(e.key == "o" || e.code == "o"){
-            //togglePlayerAimControl();
+        
+        if(e.key == KEY_CODES.DAMAGE_LEFT || e.code == KEY_CODES.DAMAGE_LEFT){
+            UFOStartCharge(0);
+        }
+        if(e.key == KEY_CODES.DAMAGE_CENTER || e.code == KEY_CODES.DAMAGE_CENTER){
+            UFOStartCharge(1);
+        }
+        if(e.key == KEY_CODES.DAMAGE_RIGHT || e.code == KEY_CODES.DAMAGE_RIGHT){
+            UFOStartCharge(2);
+        }
+
+        if(e.key == KEY_CODES.REPAIR_LEFT || e.code == KEY_CODES.REPAIR_LEFT){
+            if(!gameHasStarted){
+                startGame();
+                return;
+            }
+            repairDamage(0);
+        }
+        if(e.key == KEY_CODES.REPAIR_CENTER || e.code == KEY_CODES.REPAIR_CENTER){
+            if(!gameHasStarted){
+                startGame();
+                return;
+            }
+            repairDamage(1);
+        }
+        if(e.key == KEY_CODES.REPAIR_RIGHT || e.code == KEY_CODES.REPAIR_RIGHT){
+            if(!gameHasStarted){
+                startGame();
+                return;
+            }
+            repairDamage(2);
         }
     }
 
@@ -137,71 +255,33 @@ $(document).ready(function(){
             document.getElementById('debug_red').style.width = (CannonballWidth*scaleAdjust);
             document.getElementById('debug_red').style.height = (CannonballHeight*scaleAdjust);
         }
-        let hits = [];
-        if(bossStarted){
-            let t_pos = $("#boss").offset();
-            if(t_pos == undefined){
-                //oops
-                hitSound(false);
-                $("#cannonball"+cannonballID).remove();
-                return;
-            }
-            let t_left = t_pos.left;
-            let t_top = t_pos.top;
-            let t_right = $("#boss").width()+t_left;
-            let t_bottom = $("#boss").height()+t_top;
-            let overlap = !(c_right < t_left || c_left > t_right || c_bottom < t_top || c_top > t_bottom);
-            if(overlap){
-                hitBoss();
-            }
-        }else{
-            tenticals.forEach(function(t, i){
-                if(t.active){
-                    let t_css_bottom = $("#tid_"+t.id).css('bottom');
-                    t_css_bottom = parseInt(t_css_bottom.replace('px', ''));
-                    if(t_css_bottom > -400){ //make sure it's fully raised up
-                        let t_pos = $("#tid_"+t.id).position();
-                        let t_left = t_pos.left;
-                        let t_top = t_pos.top;
-                        let t_right = $("#tid_"+t.id).width()+t_left;
-                        let t_bottom = $("#tid_"+t.id).height()+t_top;
-                        let overlap = !(c_right < t_left || c_left > t_right || c_bottom < t_top || c_top > t_bottom);
-                        if(overlap){
-                            t.indexID = i;
-                            hits.push(t);
-                        }
-                    }
+
+        //HIT UFO
+
+        let t_pos = $("#ufo").offset();
+        if(t_pos == undefined){
+            //oops
+            hitSound(false);
+            $("#cannonball"+cannonballID).remove();
+            return;
+        }
+        let t_left = t_pos.left;
+        let t_top = t_pos.top;
+        let t_right = $("#ufo").width()+t_left;
+        let t_bottom = $("#ufo").height()+t_top;
+        let overlap = !(c_right < t_left || c_left > t_right || c_bottom < t_top || c_top > t_bottom);
+        if(overlap){
+            ufoWasHit = true;
+            score++;
+            UFOCancelCharge();
+            $("#ufo_damage").addClass("ufo_hit");
+            hitSound(true);
+            setTimeout(function(){
+                $("#ufo_damage").removeClass("ufo_hit");
+                if(score >= 3){
+                    endGame(true);
                 }
-            });
-            if(hits.length > 0){
-                hitSound(true);
-                if(bgMusic.volume <= 1){
-                    let newVolumne = bgMusic.volume + musicIncrease;
-                    if(newVolumne > 1){
-                        bgMusic.volume = 1;
-                    }else{
-                        bgMusic.volume += musicIncrease;
-                    }
-                }
-                hits.sort(function(a,b){
-                    if(a.c < b.c){
-                        return -1;
-                    }else if(a.c > b.c){
-                        return 1;
-                    }
-                    return 0;
-                });
-                $("#tid_"+hits[0].id).addClass("death");
-                setTimeout(tenticalRemove.bind(null, hits[0].id), 2000);
-                tenticals.splice(hits[0].indexID, 1);
-                
-                score++;
-                if(score >= bossStartScore){
-                    startBoss();
-                }
-            }else{
-                hitSound(false);
-            }
+            }, 500);
         }
         
 
@@ -267,18 +347,133 @@ $(document).ready(function(){
     }
     */
 });
+//UFO
+let ufoHP = [false, false, false];;
+let ufoWasHit = false;
+let ufoIsReadyForCommands = false;
+function startUFO(){
+    ufoHP = [false, false, false];
+    ufoHit = false;
+    $("#ufo").removeClass("ufo_hit");
+    $("#ufo").removeClass("ufo_end");
+
+    let d = getRandomInt(2) + 1;
+    UFOApproach(1);
+}
+function UFOApproach(num){
+    console.log("UFO APPROACH", num);
+    $("#ufo").addClass("intro_"+num);
+    setTimeout(function(){
+        $("#ufo").removeClass("intro_"+num);
+        $("#ufo").addClass("idle_"+num);
+        //Ardiuno will send keyboard comamnd to start the charge
+        //UFOStartCharge();
+    }, 3000);
+}
+
+function UFOCancelCharge(){
+    console.log("UFO CANCEL CHARGE");
+    $("#laser_charge").removeClass("charging");
+}
+
+let ufoNewFireDirection = 0;
+//0 = left, 1 = center, 2 = right
+function UFOStartCharge(d){
+    console.log("UFO START CHARGE", d);
+    if(damage[d] === true){ 
+        console.log("UFO CANCELED DUE TO DAMAGE");
+        return;
+    }
+    if(isShipFullyDamaged()){
+        return;
+    }
+    console.log("UFO CHARGING", d);
+    ufoNewFireDirection = d;
+    $("#laser_charge").addClass("charging");
+    setTimeout(UFOLaserFire, 3000);
+}
+function UFOLaserFire(){
+    console.log("UFO FIRE", ufoNewFireDirection);
+    if(ufoWasHit){ 
+        console.log("UFO CANCELED DUE TO BEING HIT");
+        ufoWasHit = false;
+        //UFOStartCharge();
+        return;
+    }
+    $("#laser_charge").removeClass("charging");
+    let d = ufoNewFireDirection;
+    if(damage[d] === true){
+        console.log("UFO CANCELED DUE TO DAMAGE ON FIRE DIRECTION");
+        UFOLaserFire();
+        return;
+    }
+    switch(d){
+    case 0:
+        UFOLaserLeft();
+        break;
+    case 1:
+        UFOLaserCenter();
+        break;
+    case 2:
+        UFOLaserRight();
+            break;
+    }
+
+    //setTimeout(UFOStartCharge, 3000);
+}
+function UFOLaserLeft(){
+    console.log("UFO LASER LEFT");
+    $("#laser_left").show();
+    $("#laser_left").addClass("fire");
+    setTimeout(function(){
+        $("#laser_left").removeClass("fire");
+        $("#laser_left").hide();
+        takeDamage(0);
+    }, 300);
+}
+function UFOLaserCenter(){
+    console.log("UFO LASER CENTER");
+    $("#laser_center").show();
+    $("#laser_center").addClass("fire");
+    setTimeout(function(){
+        $("#laser_center").removeClass("fire");
+        $("#laser_center").hide();
+        takeDamage(1);
+    }, 300);
+}
+function UFOLaserRight(){
+    console.log("UFO LASER RIGHT");
+    $("#laser_right").show();
+    $("#laser_right").addClass("fire");
+    setTimeout(function(){
+        $("#laser_right").removeClass("fire");
+        $("#laser_right").hide();
+        takeDamage(2);
+    }, 300);
+}
+
 
 //DAMAGE
 let damage = [false, false, false];
-function takeDamage(){
+function isShipFullyDamaged(){
     if(damage[0] === true && damage[1] === true && damage[2] === true){
+        endGame();
+        return true;
+    }
+    return false;
+}
+function takeDamage(d){
+    if(damage[d] === true){ return; }
+    if(isShipFullyDamaged()){
         return;
     }
     console.log("damage");
 
     let tookDamange = false;
     while(tookDamange == false){
-        let d = getRandomInt(2);
+        if(d == undefined){
+            d = getRandomInt(2);
+        }
         if(damage[d] === false){
             damage[d] = true;
             let damagePart = d;
@@ -295,149 +490,30 @@ function takeDamage(){
                 break;
             }
             tookDamange = true;
+            isShipFullyDamaged();
         }
     }
-
+}
+function repairDamage(id){
+    switch(id){
+        case 0:
+            damage[0] = false;
+            $("#ship_left").attr('src', "images/ship_left.png");
+        break;
+        case 1:
+            damage[1] = false;
+            $("#ship_center").attr('src', "images/ship_center.png");
+        break;
+        case 2:
+            damage[2] = false;
+            $("#ship_right").attr('src', "images/ship_right.png");
+        break;
+    }
 }
 
 //
 
 let animate;
-
-function setupAnimation(){
-    /* SETUP ANIMATION */
-    let wDown = false;
-    let aDown = false;
-    let sDown = false;
-    let dDown = false;
-    let swayHorizAmounts = [];
-    let swayVerticalAmounts = [];
-
-    let amount1 = 0.01
-    let maxHorizAmount = 2.5;
-    //far right
-    for(let i = 0; i <= maxHorizAmount; i+=amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayHorizAmounts.push(i)
-    }
-    for(let i = maxHorizAmount; i >= 0; i -= amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayHorizAmounts.push(i)
-    }
-    //move back to left
-    for(let i = 0; i >= maxHorizAmount*-1; i -= amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayHorizAmounts.push(i)
-    }
-    for(let i = maxHorizAmount*-1; i <= 0; i += amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayHorizAmounts.push(i)
-    }
-
-    //VERTICAL
-
-    let maxVerticalAmount = 1;
-    for(let i = 0; i <= (maxVerticalAmount-0.2); i+=amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayVerticalAmounts.push(i)
-    }
-    for(let i = (maxVerticalAmount-0.2); i >= 0; i -= amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayVerticalAmounts.push(i)
-    }
-    //move back top
-    for(let i = 0; i >= maxVerticalAmount*-1; i -= amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayVerticalAmounts.push(i)
-    }
-    for(let i = maxVerticalAmount*-1; i <= 0; i += amount1){
-        i = parseFloat(parseFloat(i).toFixed(2))
-        swayVerticalAmounts.push(i)
-    }
-
-    let swayIndexHorizTracker = 0;
-    let swayIndexVerticalTracker = 0;
-
-    document.addEventListener("keydown", (e) => {
-        if(playerControlAim){
-            if(e.key == 'w' || e.code == 'w'){
-                wDown = true;
-            }
-            if(e.key == 'a' || e.code == 'a'){
-                aDown = true;
-            }
-            if(e.key == 's' || e.code == 's'){
-                sDown = true;
-            }
-            if(e.key == 'd' || e.code == 'd'){
-                dDown = true;
-            }
-        }
-    })
-    document.addEventListener("keyup", (e) => {
-        if(playerControlAim){
-            if(e.key == 'w' || e.code == 'w'){
-                wDown = false;
-            }
-            if(e.key == 'a' || e.code == 'a'){
-                aDown = false;
-            }
-            if(e.key == 's' || e.code == 's'){
-                sDown = false;
-            }
-            if(e.key == 'd' || e.code == 'd'){
-                dDown = false;
-            }
-        }
-    })
-    animate = () => {
-        if(wDown){
-            crosshairTop -= CrosshairVerticalIncreaseAmount;
-        }
-        if(aDown){
-            crosshairLeft -= CrosshairHorizIncreaseAmount;
-        }
-        if(sDown){
-            crosshairTop += CrosshairVerticalIncreaseAmount;
-        }
-        if(dDown){
-            crosshairLeft += CrosshairHorizIncreaseAmount;
-        }
-
-        
-
-        crosshairLeft += swayHorizAmounts[swayIndexHorizTracker];
-        swayIndexHorizTracker++;
-        if(swayIndexHorizTracker > swayHorizAmounts.length-1){
-            swayIndexHorizTracker=0;
-        }
-
-        crosshairTop += swayVerticalAmounts[swayIndexVerticalTracker];
-        swayIndexVerticalTracker++;
-        if(swayIndexVerticalTracker > swayVerticalAmounts.length-1){
-            swayIndexVerticalTracker=0;
-        }
-
-        if(crosshairTop < 0){
-            crosshairTop = 0;
-        }
-        if(crosshairLeft < 0){
-            crosshairLeft = 0;
-        }
-        if(crosshairTop > document.body.clientHeight - CrosshairsHeight){
-            crosshairTop = document.body.clientHeight - CrosshairsHeight;
-        }
-        if(crosshairLeft > document.body.clientWidth - CrosshairsWidth){
-            crosshairLeft = document.body.clientWidth - CrosshairsWidth;
-        }
-
-        document.getElementById('crosshairs').style.left = crosshairLeft+'px';
-        document.getElementById('crosshairs').style.top = crosshairTop+'px';
-        if(playerControlAim){
-            window.requestAnimationFrame(animate);
-        }
-    }
-}
 
 
 let isCooledDown = true;
@@ -509,7 +585,8 @@ function activeDelay(index){
     tenticals[index].active = true
 }
 
-setTimeout(tick, 2000);
+//ENABLE THIS TO ENABLE TENTICALS
+//setTimeout(tick, 2000);
 function tick(){
     //generateTenticalHTML();
     processTenticals()

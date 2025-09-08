@@ -9,10 +9,18 @@
         <link href="main.css" rel="stylesheet">
         <!--<script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>--> <!-- todo switch to local -->
         <script src="iro@5.js"></script>
+        <script src="fireworks.umd.js"> </script>
     </head>
     <body class="p-4">
+        <div class="fireworks" style="height:100%;"></div>
         <!-- SHOW PAGE -->
         <div id="page-show" class="">
+
+            <!-- GAME START, GAME OVER, VICTORY PAGE -->
+            <div id="title-text">Press Any Button to Start</div>
+            <img id="start-ship" class="splash-ship" src="images/splash-ship-start.png" />
+            <img id="game-over-ship" class="splash-ship" src="images/splash-ship-damage.png" />
+
             <!-- TODO: add pause class back in-->
             <div class="tenticalContainer" id="tc_4"></div>
             <div class="wave" id="wave_3"></div>
@@ -23,6 +31,15 @@
             <div class="tenticalContainer" id="tc_1"></div>
             <div class="wave" id="wave_0"></div>
             <div class="tenticalContainer" id="tc_0"></div>
+            <!--UFO-->
+            <div id="ufo_damage">
+            <div id="ufo">
+                <div id="laser_charge"></div>
+                <div id="laser_left"></div>
+                <div id="laser_center"></div>
+                <div id="laser_right"></div>
+            </div>
+            </div>
             <!-- Crosshairs -->
             <div id="crosshairs"></div>
             <!-- Cannonball -->
@@ -41,8 +58,10 @@
         </div>
         
         
+
+
         
-        <!-- STARTUP PAGE -->
+        <!-- OPTIONS PAGE -->
         <div id="page-startup" class="container overflow-hidden hidden">
             <!-- Starting Page -->
             <div class="row" id="scan">

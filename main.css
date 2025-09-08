@@ -5,6 +5,310 @@ body{
     background-size: cover;
 }
 
+.splash-ship{
+    position: fixed;
+    bottom: 0%;
+    z-index: 0;
+    width: 50%;
+    margin: auto;
+    left: 0px;
+    right: 0px;
+    z-index: 3 !important;
+
+}
+.sink-ship{
+    animation-iteration-count:1;
+    animation-fill-mode: forwards;
+    animation-name: sinking-ship;
+    animation-duration: 5s;
+}
+@keyframes sinking-ship {
+    0%{
+        bottom:0%;
+    }
+    100%{
+        bottom:-50%;
+    }
+}
+.ship-start-animation{
+    animation-name: ship-start !important;
+    animation-duration: 2s !important;
+    animation-iteration-count: 1 !important;
+    animation-timing-function:ease-out;
+    animation-fill-mode: forwards;
+}
+@keyframes ship-start {
+    0%{
+        /* transform:scale(1); */
+        opacity: 1;
+    }
+    100%{
+        /* transform:scale(3); */
+        opacity: 0;
+    }
+}
+#start-ship{
+    animation-iteration-count: infinite;
+    animation-name: arc-move-anim-1;
+    animation-duration: 7s;
+}
+#title-text{
+    position: fixed;
+    top: 50px;
+    width: 100%;
+    text-align: center;
+    font-size: 6em;
+    color: white;
+    font-family: "Jaini", system-ui;
+    font-weight: 400;
+    font-style: normal;
+    z-index: 3;
+    text-shadow: 2px 2px 4px #000000;
+}
+
+#ufo{
+    position: fixed;
+    top: -20%;
+    left: 40%;
+    width: 300px;
+    height: 150px;
+    background-image: url('images/ufo.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+#ufo_damage{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+}
+.ufo_destroyed{
+   animation-name: bossEnd;
+    animation-duration: 4s;
+    animation-fill-mode: forwards;
+}
+@keyframes bossEnd {
+    0% {
+		transform: scale(1) rotate(0);
+	}
+	100% {
+		transform: scale(0) rotate(720deg);
+	}
+}
+
+#ufo.intro_1{
+    animation-name: ufoAnim_1_intro;
+    animation-duration: 3s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+#ufo.idle_1{
+    animation-name: ufoAnim_1_idle;
+    animation-duration: 40s;
+    animation-iteration-count: infinite;
+    animation-fill-mode:forwards
+}
+@keyframes ufoAnim_1_intro {
+    0%{
+        top:-20%;
+        left:40%;
+    }
+    100%{
+        top:25%;
+        left:68%;
+    }
+}
+
+/* top 25 to 10, crosshair is 18 */
+@keyframes ufoAnim_1_idle {
+    0%{
+        top:25%;
+        left:68%;
+    }
+    10%{
+        top:15%;
+        left:82%;
+    }
+    15%{
+        top:25%;
+        left:20%;
+    }
+    25%{
+        top:12%;
+        left:30%;
+    }
+    35%{
+        top:15%;
+        left:15%;
+    }
+    45%{
+        top:18%;
+        left:68%;
+    }
+    55%{
+        top:22%;
+        left:82%;
+    }
+    65%{
+        top:18%;
+        left:70%;
+    }
+    75%{
+        top:25%;
+        left:89%;
+    }
+    85%{
+        top:10%;
+        left:42%;
+    }
+    95%{
+        top:22%;
+        left:50%;
+    }
+    100%{
+        top:25%;
+        left:68%;
+    }
+}
+
+
+#ufo_damage.ufo_hit{
+    animation: ufoAnim_hit 0.5s 1 forwards !important;
+    /* animation-name: ufoAnim_hit;
+    animation-duration: 0.5s; */
+}
+@keyframes ufoAnim_hit {
+    0%{
+        filter: none;
+    }
+    50%{
+        filter: invert(14%) sepia(45%) saturate(7441%) hue-rotate(0deg) brightness(77%) contrast(119%);
+    }
+    100%{
+        filter: none;
+    }
+}
+
+#ufo #laser_charge{
+    position: relative;
+    bottom: -67px;
+    left: 99px;
+    background-image: url(images/laser-charge.png);
+    width: 100px;
+    height: 100px;
+    background-size: cover;
+    opacity: 0;
+}
+#ufo #laser_charge.charging{
+    animation-name: ufoAnim_laser_charge;
+    animation-duration: 3s;
+    animation-timing-function:ease-out;
+    animation-fill-mode: forwards;
+}
+@keyframes ufoAnim_laser_charge {
+    0%{
+        transform: scale(1);
+        opacity: 0;
+    }
+    100%{
+        transform: scale(3);
+        opacity: 1;
+    }
+}
+#ufo #laser_right{
+    position: relative;
+    bottom: -14px;
+    left: 149px;
+    background-image: url(images/laser-right.png);
+    width: 542px;
+    height: 560px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform-origin: top left;
+    display: none;
+}
+#ufo #laser_right.fire{
+    animation-name: ufoAnim_laser_fir_right;
+    animation-duration: 0.3s;
+    animation-timing-function:ease-out;
+}
+@keyframes ufoAnim_laser_fir_right {
+    0%{
+        transform: scale(0);
+        bottom: -14px;
+        left: 149px;
+        display: block;
+    }
+    100%{
+        transform: scale(1);
+        bottom: -12px;
+        left: 146px;
+        display: block;
+    }
+}
+#ufo #laser_center{
+    position: relative;
+    bottom: -11px;
+    left: 126px;
+    background-image: url(images/laser-front.png);
+    width: 59px;
+    height: 560px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform-origin: top center;
+    display: none;
+}
+#ufo #laser_center.fire{
+    animation-name: ufoAnim_laser_fir_center;
+    animation-duration: 0.3s;
+    animation-timing-function:ease-out;
+}
+@keyframes ufoAnim_laser_fir_center {
+    0%{
+        transform: scale(0);
+        bottom: -11px;
+        left: 121px;
+    }
+    100%{
+        transform: scale(1);
+        bottom: -11px;
+        left: 126px;
+    }
+}
+#ufo #laser_left{
+    position: relative;
+    bottom: -11px;
+    left: -383px;
+    background-image: url(images/laser-left.png);
+    width: 542px;
+    height: 560px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    transform-origin: top right;
+    display: none;
+}
+#ufo #laser_left.fire{
+    animation-name: ufoAnim_laser_fir_left;
+    animation-duration: 0.3s;
+    animation-timing-function:ease-out;
+}
+@keyframes ufoAnim_laser_fir_left {
+    0%{
+        transform: scale(0);
+        bottom: -16px;
+        left: -391px;
+        display: block;
+    }
+    100%{
+        transform: scale(1);
+        bottom: -11px;
+        left: -383px;
+        display: block;
+    }
+}
+
+
+
 #ship{
     position: fixed;
     bottom: -48%;
@@ -55,6 +359,7 @@ body{
     background-image: url('images/wave_0.png');
     animation-duration: 4s;
     bottom:-70px;
+    z-index: 5;
 }
 #wave_1{
     background-image: url('images/wave_1.png');
@@ -62,6 +367,7 @@ body{
     bottom: -78px;
     height: 320px;
     left: -180px;
+    z-index: 4;
     
 }
 #wave_2{
@@ -73,12 +379,14 @@ body{
     left: -95px;
     /*set so that it doesn't jump after the dealy */
     transform: rotate(0deg) translateX(-50px) rotate(0deg) translateX(0px);
+    z-index: 2;
 }
 #wave_3{
     background-image: url('images/wave_3.png');
     animation-duration: 10s;
     bottom:70px;
     left: -150px;
+    z-index: 1;
 }
 
 .tentical{
@@ -186,18 +494,19 @@ body{
 }
 #crosshairs.auto{
     animation-name: crosshairsAnim;
-    animation-duration: 30s;
+    animation-duration: 10s;
     animation-iteration-count: infinite;
 }
 .cannonball{
     width:400px;
     height:400px;
-    background-image: url('images/cannonball.webp');
+    background-image: url('images/cannonball.png');
     background-size: contain;
     position: absolute;
     animation-name: cannonballAnim;
     animation-duration: 1s;
     animation-timing-function:ease-out;
+    animation-fill-mode: forwards;
 }
 .cannonball.debug{
     border: solid 5px #ddfb00;
@@ -239,54 +548,14 @@ body{
         top:18%;
         left:2%;
     }
-    /* bottom, middle */
-    10%{
-        top:80%;
-        left:48%;
-    }
-    /* middle, right */
-    20%{
-        top:50%;
-        left:80%;
-    }
-    /* middle, left */
-    30%{
-        top:60%;
-        left:12%;
-    }
-    /* top, right */
-    40%{
-        top:20%;
-        left:90%;
-    }
     /* middle, middle */
     50%{
-        top:52%;
-        left:46%;
-    }
-    /* bottom, right */
-    60%{
-        top:78%;
-        left:89%;
-    }
-    /* top, middle */
-    70%{
-        top:27%;
-        left:53%;
-    }
-    /* bottom, left */
-    80%{
-        top:82%;
-        left:6%;
-    }
-    /* middle, middle */
-    90%{
-        top:45%;
-        left:45%;
+        top:18%;
+        left:90%;
     }
     /* top, left */
     100%{
-        top:20%;
+        top:18%;
         left:2%;
     }
 }
@@ -298,16 +567,7 @@ body{
 		bottom: -30%;
 	}
 }
-@keyframes bossEnd {
-    0% {
-		transform: scale(1) rotate(0);
-        bottom:-30%;
-	}
-	100% {
-		transform: scale(0) rotate(720deg);
-        bottom:60%;
-	}
-}
+
 @keyframes bossHit {
     0%{
         filter: none;
@@ -384,16 +644,16 @@ body{
 		transform: translateX(-40px) translateY(-20px) rotate(-1deg);
 	}
 	20% {
-		transform:translateX(80px) translateY(40px) rotate(-3deg);
+		transform:translateX(80px) translateY(0px) rotate(-3deg);
 	}
     40% {
-		transform: translateX(-80px) translateY(-10px) rotate(-2deg);
+		transform: translateX(-80px) translateY(-20px) rotate(-2deg);
 	}
     60% {
-        transform: translateX(80px) translateY(-10px) rotate(0deg);
+        transform: translateX(80px) translateY(0px) rotate(0deg);
     }
     80% {
-        transform: translateX(-80px) translateY(40px) rotate(-3deg);
+        transform: translateX(-80px) translateY(-30px) rotate(-3deg);
     }
     100% {
         transform: translateX(-40px) translateY(-20px) rotate(-1deg);
@@ -408,5 +668,25 @@ body{
   }
 
 .hidden{
-    display: none;
+    display: none !important;
 }
+
+
+/* @keyframes ufoAnim_1_idle {
+    0%{
+        top:25%;
+        left:68%;
+    }
+    33%{
+        top:20%;
+        left:60%;
+    }
+    66%{
+        top:15%;
+        left:75%;
+    }
+    100%{
+        top:25%;
+        left:68%;
+    }
+} */
