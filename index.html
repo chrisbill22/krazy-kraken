@@ -63,6 +63,14 @@
         
         <!-- OPTIONS PAGE -->
         <div id="page-startup" class="container overflow-hidden hidden">
+            <div class="row pt-3" id="scan">
+                <div class="col">
+                    <div class="p-3 border bg-light">
+                        <input type="button" id="connect-arduino" value="Set Arduino Port" class="btn btn-primary"/>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Starting Page -->
             <div class="row" id="scan">
                 <div class="col">
@@ -123,6 +131,14 @@
                         controls
                         loop
                         src="audio/music1.mp3">
+                            Your browser does not support the
+                            <code>audio</code> element.
+                    </audio>
+                    <!--Ship Damage Sounds-->
+                    <audio
+                        id="ship-damage-audio"
+                        controls
+                        src="audio/placehodler.mp3">
                             Your browser does not support the
                             <code>audio</code> element.
                     </audio>

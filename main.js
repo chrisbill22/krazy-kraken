@@ -1,19 +1,26 @@
 /* -- ARDUINO REFERENCE
-s
-UNO (JOYSTICK)
-1 - power   BLACK
-2 - up      YELLOW
-3 - down    PURPLE
-4 - left    BLUE
-5 - right   BROWN
+
 
 LEO (CANNON)
-13  - switch in   GREEN
-GR - switch out  BLUE
-12 - LED IN      RED
-GR - LED OUT     YELLOW
-8  - RX SERIAL   BLACK
-9  - TX SERIAL   WHITE
+Cannon Button
+13 - Left of black wire
+A0 - Left of white wire
+Black and White to ground
+
+Button One
+12 - Green wire on harness
+A1 - Red wure ib garbess
+Blue & Black to ground
+
+Button Two
+11 - Green wire on harness
+A2 - Red wure ib garbess
+Blue & Black to ground
+
+Button Three
+10 - Green wire on harness
+A3 - Red wure ib garbess
+Blue & Black to ground
 
 ARDUINO RESPONSABILITY
 - Determine which direction to fire the UFO & damage the ship
@@ -26,11 +33,14 @@ ARDUINO RESPONSABILITY
 let audio;
 let debug = false;
 
+//Arduino communcaiton
+let arduino_port;
+
 /* GAMEPLAY VARIABLES */
 /* Change these to adjust how the game is actually played*/
 let bossStartScore = 2;
 let musicIncrease = 0.25; //was 0.1
-let cooldownTime = 1200;
+let cooldownTime = 1500;
 
 /*END GAMEPLAY VARIABLES */
 
@@ -44,12 +54,11 @@ const MinProcessTime = 3000
 const RandomProcessTime = 5000 //added to min
 
 const KEY_CODES = {
-    DAMAGE_LEFT: 'z',
-    DAMAGE_CENTER: 'x',
-    DAMAGE_RIGHT: 'c',
-    REPAIR_LEFT: 'v',
-    REPAIR_CENTER: 'b',
-    REPAIR_RIGHT: 'n'
+    REPAIR_LEFT: 'z',
+    REPAIR_CENTER: 'x',
+    REPAIR_RIGHT: 'c',
+    CHARGE_READY: 'g',
+    GAME_RESTART: 'r'
 }
 
 function getRandomInt(max) {
@@ -78,6 +87,7 @@ function startGame(){
         $("#game-over-ship").hide();
         $("#start-ship").hide();
         gameHasStarted = true;
+        sendArduinoIsCooledDown();
         startUFO();
         $('#start-ship').attr('style', 'display:none;');
     });
@@ -87,6 +97,7 @@ function endGame(won){
         return;
     }
     gameHasEnded = true;
+    sendArduinoGameRestart();
     if(won){
         console.log("win");
         let p = $('#ufo').position();
@@ -96,12 +107,17 @@ function endGame(won){
         $("#title-text").html("Victory!");
         setTimeout(() => {
             fireworks.start();
-        }, 1000)
+            winSound();
+        }, 1000);
         $("#start-ship").fadeIn(2000);
         $('#ship').fadeOut(2000);
         $('#crosshairs').fadeOut(2000);
         $("#title-text").fadeIn(2000);
         setTimeout(function(){
+            damage = [false, false, false];
+            repairDamage(0);
+            repairDamage(1);
+            repairDamage(2);
             $("#title-text").fadeOut(1000, () => {
                 $("#title-text").html("Press Any Button to Start");
                 $("#title-text").fadeIn(1000, () => {
@@ -120,7 +136,8 @@ function endGame(won){
         $("#page-splash-screen").fadeIn(2000);
         $('#ship').fadeOut(2000);
         $('#crosshairs').fadeOut(2000);
-        $("#title-text").fadeIn(2000)
+        $("#title-text").fadeIn(2000);
+        setTimeout(loseSound, 2000);
         setTimeout(function(){
             damage = [false, false, false];
             repairDamage(0);
@@ -137,7 +154,7 @@ function endGame(won){
                     $("#title-text").fadeIn(1000);
                 });
             }, 4000);
-        }, 4000);
+        }, 3000);
     }
 }
 
@@ -158,8 +175,14 @@ $(document).ready(function(){
     /* HTML INTERACTIONS */
     /* ----------------- */
     $('#start-show').click(function(){
-        $("#page-startup").hide();
+        $("#page-startup").addClass('hidden');
         $("#page-show").show();
+    });
+
+    document.getElementById('connect-arduino').addEventListener('click', async () => {
+    // Prompt user to select a serial port
+        arduino_port = await navigator.serial.requestPort();
+        await arduino_port.open({ baudRate: 9600 });
     });
 
     document.getElementById('crosshairs').classList.add('auto')
@@ -168,6 +191,7 @@ $(document).ready(function(){
     document.body.onkeyup = function(e) {
         if (isCooledDown && (e.key == " " || e.code == "Space" || e.keyCode == 32)) {
             if(!gameHasStarted){
+                requestArduinoPort();
                 startGame();
                 return;
             }
@@ -175,6 +199,7 @@ $(document).ready(function(){
             isCooledDown = false;
             setTimeout(function(){
                 isCooledDown = true;
+                sendArduinoIsCooledDown();
             }, cooldownTime)
             //let pos = $("#crosshairs").position();
             let pos = document.getElementById("crosshairs").getBoundingClientRect()
@@ -203,25 +228,26 @@ $(document).ready(function(){
             cannonballID++;
         }
         if(e.key == "p" || e.code =="p"){
-            $("#page-startup").show();
+            $("#page-startup").removeClass('hidden');
             $("#bgAudioLevel").html(bgMusic.volume);
         }
         
-        if(e.key == KEY_CODES.DAMAGE_LEFT || e.code == KEY_CODES.DAMAGE_LEFT){
-            UFOStartCharge(0);
-        }
-        if(e.key == KEY_CODES.DAMAGE_CENTER || e.code == KEY_CODES.DAMAGE_CENTER){
-            UFOStartCharge(1);
-        }
-        if(e.key == KEY_CODES.DAMAGE_RIGHT || e.code == KEY_CODES.DAMAGE_RIGHT){
-            UFOStartCharge(2);
-        }
+        // if(e.key == KEY_CODES.DAMAGE_LEFT || e.code == KEY_CODES.DAMAGE_LEFT){
+        //     UFOStartCharge(0);
+        // }
+        // if(e.key == KEY_CODES.DAMAGE_CENTER || e.code == KEY_CODES.DAMAGE_CENTER){
+        //     UFOStartCharge(1);
+        // }
+        // if(e.key == KEY_CODES.DAMAGE_RIGHT || e.code == KEY_CODES.DAMAGE_RIGHT){
+        //     UFOStartCharge(2);
+        // }
 
         if(e.key == KEY_CODES.REPAIR_LEFT || e.code == KEY_CODES.REPAIR_LEFT){
             if(!gameHasStarted){
                 startGame();
                 return;
             }
+            Ship_hitSound(true);
             repairDamage(0);
         }
         if(e.key == KEY_CODES.REPAIR_CENTER || e.code == KEY_CODES.REPAIR_CENTER){
@@ -229,6 +255,7 @@ $(document).ready(function(){
                 startGame();
                 return;
             }
+            Ship_hitSound(true);
             repairDamage(1);
         }
         if(e.key == KEY_CODES.REPAIR_RIGHT || e.code == KEY_CODES.REPAIR_RIGHT){
@@ -236,6 +263,7 @@ $(document).ready(function(){
                 startGame();
                 return;
             }
+            Ship_hitSound(true);
             repairDamage(2);
         }
     }
@@ -261,7 +289,7 @@ $(document).ready(function(){
         let t_pos = $("#ufo").offset();
         if(t_pos == undefined){
             //oops
-            hitSound(false);
+            UFO_hitSound(false);
             $("#cannonball"+cannonballID).remove();
             return;
         }
@@ -275,7 +303,7 @@ $(document).ready(function(){
             score++;
             UFOCancelCharge();
             $("#ufo_damage").addClass("ufo_hit");
-            hitSound(true);
+            UFO_hitSound(true);
             setTimeout(function(){
                 $("#ufo_damage").removeClass("ufo_hit");
                 if(score >= 3){
@@ -299,6 +327,12 @@ $(document).ready(function(){
     hitOrMiss = document.getElementById('hit-audio');
     hitOrMiss.onloadeddata = function(){
         hitOrMiss.play();
+    }
+
+    shipDamageAudio = document.getElementById('ship-damage-audio');
+    shipDamageAudio.onloadeddata = function(){
+        shipDamageAudio.volume = 0.5;
+        shipDamageAudio.play();
     }
 
     //bg wave loop
@@ -366,8 +400,7 @@ function UFOApproach(num){
     setTimeout(function(){
         $("#ufo").removeClass("intro_"+num);
         $("#ufo").addClass("idle_"+num);
-        //Ardiuno will send keyboard comamnd to start the charge
-        //UFOStartCharge();
+        UFOStartCharge();
     }, 3000);
 }
 
@@ -378,13 +411,20 @@ function UFOCancelCharge(){
 
 let ufoNewFireDirection = 0;
 //0 = left, 1 = center, 2 = right
-function UFOStartCharge(d){
-    console.log("UFO START CHARGE", d);
-    if(damage[d] === true){ 
-        console.log("UFO CANCELED DUE TO DAMAGE");
+function UFOStartCharge(){
+    if(gameHasEnded){
         return;
     }
+    let d = getRandomInt(2);
+    ufoWasHit = false;
+    console.log("UFO START CHARGE", d);
     if(isShipFullyDamaged()){
+        console.log("SHIP IS FULLY DAMAGED (1)");
+        return;
+    }
+    if(damage[d] === true){ 
+        console.log("UFO CANCELED DUE TO DAMAGE");
+        UFOStartCharge();
         return;
     }
     console.log("UFO CHARGING", d);
@@ -397,16 +437,21 @@ function UFOLaserFire(){
     if(ufoWasHit){ 
         console.log("UFO CANCELED DUE TO BEING HIT");
         ufoWasHit = false;
-        //UFOStartCharge();
+        UFOStartCharge();
         return;
     }
     $("#laser_charge").removeClass("charging");
+    if(gameHasEnded){
+        console.log("UFO CANCELED DUE TO GAME END");
+        return;
+    }
     let d = ufoNewFireDirection;
     if(damage[d] === true){
         console.log("UFO CANCELED DUE TO DAMAGE ON FIRE DIRECTION");
         UFOLaserFire();
         return;
     }
+
     switch(d){
     case 0:
         UFOLaserLeft();
@@ -419,12 +464,15 @@ function UFOLaserFire(){
             break;
     }
 
-    //setTimeout(UFOStartCharge, 3000);
+    sendArduinoHitCommand(d);
+
+    setTimeout(UFOStartCharge, 3000);
 }
 function UFOLaserLeft(){
     console.log("UFO LASER LEFT");
     $("#laser_left").show();
     $("#laser_left").addClass("fire");
+    Ship_hitSound(false);
     setTimeout(function(){
         $("#laser_left").removeClass("fire");
         $("#laser_left").hide();
@@ -435,6 +483,7 @@ function UFOLaserCenter(){
     console.log("UFO LASER CENTER");
     $("#laser_center").show();
     $("#laser_center").addClass("fire");
+    Ship_hitSound(false);
     setTimeout(function(){
         $("#laser_center").removeClass("fire");
         $("#laser_center").hide();
@@ -445,6 +494,7 @@ function UFOLaserRight(){
     console.log("UFO LASER RIGHT");
     $("#laser_right").show();
     $("#laser_right").addClass("fire");
+    Ship_hitSound(false);
     setTimeout(function(){
         $("#laser_right").removeClass("fire");
         $("#laser_right").hide();
@@ -495,6 +545,7 @@ function takeDamage(d){
     }
 }
 function repairDamage(id){
+    
     switch(id){
         case 0:
             damage[0] = false;
@@ -637,7 +688,7 @@ function hitBoss(){
         }, 3900);
         winSound();
     }else{
-        hitSound(true);
+        UFO_hitSound(true);
         $("#boss_intro").addClass("boss_hit");
         setTimeout(function(){
             $("#boss_intro").remove();
@@ -673,14 +724,31 @@ function winTheGame(){
     
 }
 
-function hitSound(wasHit){
+function UFO_hitSound(wasHit){
     if(wasHit){
-        hitOrMiss.src = "audio/hit1.mp3";
+        switch(getRandomInt(2)){
+            case 0:
+                hitOrMiss.src = "audio/ufoHit1.m4a";
+            break;
+            case 1:
+                hitOrMiss.src = "audio/ufoHit2.m4a";
+            break;
+            case 2:
+                hitOrMiss.src = "audio/ufoHit3.m4a";
+            break;
+        }
     }else{
         hitOrMiss.src = "audio/splash"+(getRandomInt(1)+1)+".mp3";
     }
-    
 }
+function Ship_hitSound(wasRepaired){
+    if(wasRepaired){
+        shipDamageAudio.src = "audio/shipRepair1.m4a";
+    }else{
+        shipDamageAudio.src = "audio/shipDamage1.m4a";
+    }
+}
+
 function cannonSound(){
     cannonBoom.src = "audio/cannon"+(getRandomInt(2)+1)+".m4a";
     //start playing background audio if it hasn't started yet.
@@ -700,6 +768,21 @@ function cannonSound(){
 function winSound(){
     hitOrMiss.src = "audio/success"+(getRandomInt(1)+1)+".mp3";
 }
+function loseSound(){
+    hitOrMiss.volume = 0.5;
+    hitOrMiss.src = "audio/gameover.wav";
+    setTimeout(function(){
+        hitOrMiss.volume = 1;
+    }, 3000);
+}
+
+async function requestArduinoPort(){
+    if(arduino_port != undefined){
+        return;
+    }
+    arduino_port = await navigator.serial.requestPort();
+    await arduino_port.open({ baudRate: 9600 });
+}
 
 let pTmax = 11;
 let pTlast = [];
@@ -713,4 +796,57 @@ function newTalkSound(){
         pTlast = [nextNum];
     }
     pirateTalk.src = "audio/pirate"+(nextNum)+".mp3";
+}
+
+function sendArduinoGameRestart(){
+     if(arduino_port == undefined){
+        console.error("No arduino connected");
+        return;
+    }
+    console.log("SEND ARDUINO COMMAND: Game Restart ", KEY_CODES.GAME_RESTART);
+
+    const writer = arduino_port.writable.getWriter();
+    const data = new Uint8Array([KEY_CODES.GAME_RESTART.charCodeAt(0)]);
+    writer.write(data);
+    writer.releaseLock();
+}
+function sendArduinoIsCooledDown(){
+     if(arduino_port == undefined){
+        console.error("No arduino connected");
+        return;
+    }
+    console.log("SEND ARDUINO COMMAND: Cannon is cooled ", KEY_CODES.CHARGE_READY);
+
+    const writer = arduino_port.writable.getWriter();
+    const data = new Uint8Array([KEY_CODES.CHARGE_READY.charCodeAt(0)]);
+    writer.write(data);
+    writer.releaseLock();
+}
+function sendArduinoHitCommand(hitPart){
+
+    if(arduino_port == undefined){
+        console.error("No arduino connected");
+        return;
+    }
+
+    console.log("SEND ARDUINO HIT COMMAND", hitPart);
+
+    let keyChar = '';
+    switch(hitPart){
+        case 0:
+            keyChar = 'v';
+        break;
+        case 1:
+            keyChar = 'b';
+        break;
+        case 2:
+            keyChar = 'n';
+        break;
+    }
+
+    const writer = arduino_port.writable.getWriter();
+    const data = new Uint8Array([keyChar.charCodeAt(0)]);
+    
+    writer.write(data); // Send the data
+    writer.releaseLock();
 }
