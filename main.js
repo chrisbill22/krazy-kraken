@@ -58,7 +58,9 @@ const KEY_CODES = {
     REPAIR_CENTER: 'x',
     REPAIR_RIGHT: 'c',
     CHARGE_READY: 'g',
-    GAME_RESTART: 'r'
+    GAME_RESTART: 'r',
+    UFO_DAMAGE: 'h',
+    UFO_DESTROYED: 'j',
 }
 
 function getRandomInt(max) {
@@ -97,8 +99,8 @@ function endGame(won){
         return;
     }
     gameHasEnded = true;
-    sendArduinoGameRestart();
     if(won){
+        sendArduinoUFODestroyedCommand();
         console.log("win");
         let p = $('#ufo').position();
         $('#ufo').offset({ top: p.top, left: p.left });
@@ -130,6 +132,7 @@ function endGame(won){
             $('#ufo').hide();
         }, 5000);
     }else{
+        sendArduinoGameRestart();
         console.log("lose");
         $("#title-text").html("Game Over");
         $("#game-over-ship").fadeIn(2000);
@@ -304,6 +307,7 @@ $(document).ready(function(){
             UFOCancelCharge();
             $("#ufo_damage").addClass("ufo_hit");
             UFO_hitSound(true);
+            sendArduinoUFODamageCommand();
             setTimeout(function(){
                 $("#ufo_damage").removeClass("ufo_hit");
                 if(score >= 3){
@@ -848,5 +852,30 @@ function sendArduinoHitCommand(hitPart){
     const data = new Uint8Array([keyChar.charCodeAt(0)]);
     
     writer.write(data); // Send the data
+    writer.releaseLock();
+}
+
+function sendArduinoUFODamageCommand(){
+    if(arduino_port == undefined){
+        console.error("No arduino connected");
+        return;
+    }
+    console.log("SEND ARDUINO COMMAND: UFO Damaged ", KEY_CODES.UFO_DAMAGE);
+
+    const writer = arduino_port.writable.getWriter();
+    const data = new Uint8Array([KEY_CODES.UFO_DAMAGE.charCodeAt(0)]);
+    writer.write(data);
+    writer.releaseLock();
+}
+function sendArduinoUFODestroyedCommand(){
+        if(arduino_port == undefined){
+        console.error("No arduino connected");
+        return;
+    }
+    console.log("SEND ARDUINO COMMAND: UFO Destroyed ", KEY_CODES.UFO_DESTROYED);
+
+    const writer = arduino_port.writable.getWriter();
+    const data = new Uint8Array([KEY_CODES.UFO_DESTROYED.charCodeAt(0)]);
+    writer.write(data);
     writer.releaseLock();
 }
